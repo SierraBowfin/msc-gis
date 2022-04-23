@@ -1,0 +1,26 @@
+#map {
+    height: 600px;
+    width:600px }
+#controlDiv {width: auto;}
+
+.floatChild {
+    float: left;
+    width:50%;
+    padding:20px}
+#legendDiv {
+    width: auto;
+    padding-top: 0%;}
+#layersList {
+     list-style: none; }
+
+.listElement {
+    border: 3px solid #666;
+    background-color: #ddd;
+    border-radius: .5em;
+    padding: 1px;
+    cursor: move;
+}
+
+.listElement.over {
+    border: 3px dotted #f00;
+}

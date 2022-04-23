@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+   <title>Page Title</title>
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
+      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
+      crossorigin=""/>
+   <link rel="stylesheet" href="main.css"/>
+   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
+      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
+      crossorigin=""></script>
+</head>
+<body>
+   <div>
+      <div id="map" class="floatChild"></div>
+      <div id="legendDiv"class="floatChild">
+         <!-- <p>Legend</p> -->
+         <img id="legend"></img>
+      </div>
+      <div id="controlDiv" class="floatChild container">
+         <ul id="layersList"></ul>
+      </div>
+   </div>
+
+   <script src="utils.js"></script>
+   <script src="test.js"></script>
+</body>
+</html>
