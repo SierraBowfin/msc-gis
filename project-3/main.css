@@ -6,12 +6,17 @@
 .floatChild {
     float: left;
     width:50%;
-    padding:20px}
+    padding:10px}
 #legendDiv {
     width: auto;
     padding-top: 0%;}
-#layersList {
-     list-style: none; }
+
+#layers-list{
+    list-style: none;
+}
+.layersList {
+    padding-inline-start:5px;
+}
 
 .listElement {
     border: 3px solid #666;

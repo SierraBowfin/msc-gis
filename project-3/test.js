@@ -29,45 +29,12 @@ var STATE = {
         wms_tileLayer.addTo(map)
     },
 
-    handleDrop: function(event) {
-        event.stopPropagation();
-        event.target.classList.remove('over');
-        
-        if (dragSrcEl !== this) {
-            props = JSON.parse(event.dataTransfer.getData('text/plain'));
-            dragSrcEl.firstChild.checked = this.firstChild.checked
-            dragSrcEl.firstChild.setAttribute('checked', this.firstChild.checked);
-            dragSrcEl.childNodes[1].nodeValue = this.childNodes[1].textContent;
-
-            this.firstChild.checked = props.checked;
-            this.firstChild.setAttribute('checked', props.checked);
-            this.childNodes[1].nodeValue = props.text;
-
-            let arr = STATE.all_layers.slice();
-            arr.splice(this.firstChild.value, 1, this.childNodes[1].textContent);
-            arr.splice(dragSrcEl.firstChild.value, 1, dragSrcEl.childNodes[1].textContent);
-            STATE.all_layers = arr
-
-            arr = STATE.selected_layers.slice();
-            arr.splice(this.firstChild.value, 1, this.firstChild.checked);
-            arr.splice(dragSrcEl.firstChild.value, 1, dragSrcEl.firstChild.checked);
-            STATE.setSelectedLayers(arr)
-        }
-        
-        return false;
-    },
-
-    handleDropAlternative: function (event){
+    handleDrop: function (event){
         event.stopPropagation();
         event.target.classList.remove('over'); 
         
         if (dragSrcEl !== this) {
             src = JSON.parse(event.dataTransfer.getData('text/plain'));
-
-            // let arr = STATE.all_layers.slice();
-            // arr.splice(this.firstChild.value, 1, src.text);
-            // arr.splice(src.value, 1, this.childNodes[1].textContent);
-            // STATE.all_layers = arr
 
             let arr = STATE.all_layers.slice();
             if (src.value < parseInt(this.firstChild.value)){
@@ -96,7 +63,8 @@ var STATE = {
                 'layersList':STATE.all_layers,
                 'toggleList':STATE.selected_layers,
                 'slectionHandler':STATE.handleSelection,
-                'dropHandler':STATE.handleDropAlternative
+                'dropHandler':STATE.handleDrop,
+                'clickHandler':STATE.handleClick,
             });
         }
         
@@ -110,10 +78,15 @@ var STATE = {
         console.log(arr)
         STATE.setSelectedLayers(arr)
     },
+
+    handleClick: function(event){
+        GetCapabilities();
+    }
 }
 
+function GetCapabilities(){
 
-fetch('http://localhost:8080/geoserver/nis/nis_bato/wms?version=2.0.0&request=GetCapabilities')
+    fetch('http://localhost:8080/geoserver/nis/nis_bato/wms?version=2.0.0&request=GetCapabilities')
     .then(res => {return res.text()})
     .then(text => {
         parser = new DOMParser();
@@ -132,9 +105,13 @@ fetch('http://localhost:8080/geoserver/nis/nis_bato/wms?version=2.0.0&request=Ge
             'layersList':STATE.all_layers,
             'toggleList':STATE.selected_layers,
             'slectionHandler':STATE.handleSelection,
-            'dropHandler':STATE.handleDropAlternative
+            'dropHandler':STATE.handleDrop,
+            'clickHandler':STATE.handleClick,
         });
     })
+}
+
+
 
 
 function drawLegend(e){
@@ -222,6 +199,8 @@ function draw_single_way(obj, e){
         createFeatureRepresentation(geom, feature.geometry.type).addTo(map));
 }
 
+
+GetCapabilities()
 map.on('click', onMapClick);
 //map.on('zoom', drawLegend);
 //map.on('move', drawLegend);

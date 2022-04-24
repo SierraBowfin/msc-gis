@@ -101,7 +101,7 @@ function createAttributeTable(attObject){
 }
 
 function renderLayersList(props) {
-    let layersDOM = document.getElementById('layersList')
+    let layersDOM = document.getElementById('layers-list')
     while (layersDOM.firstChild) {
         layersDOM.removeChild(layersDOM.lastChild);
       }
@@ -152,4 +152,7 @@ function renderLayersList(props) {
         listItem.appendChild(container);
         layersDOM.appendChild(listItem);
     })
+
+    let resetBtn = document.getElementById('layers-reset');
+    resetBtn.addEventListener('click', props.clickHandler)
 }
