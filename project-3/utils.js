@@ -117,12 +117,20 @@ function renderLayersList(props) {
         inputEl.checked = props.toggleList[idx];
         inputEl.addEventListener('change', props.slectionHandler);
 
+        selector = document.createElement('input');
+        selector.setAttribute('type', 'radio');
+        selector.setAttribute('name', 'sel_layer');
+        selector.setAttribute('value', idx);
+        selector.checked = idx === parseInt(props.currentLayer);
+        selector.addEventListener('click', props.radioClickHandler);
         
         container = document.createElement('div');
         container.setAttribute('class','listElement');
         container.setAttribute('draggable', true)
         container.appendChild(inputEl);
+        container.appendChild(selector);
         container.appendChild(document.createTextNode(layer));
+        
 
         container.addEventListener('dragstart', function (event) {
             event.target.style.opacity=0.5;
@@ -132,7 +140,7 @@ function renderLayersList(props) {
             event.dataTransfer.setData('text/plain', JSON.stringify({
                 'value':this.firstChild.value,
                 'checked':this.firstChild.checked,
-                'text':this.childNodes[1].textContent}));
+                'text':this.childNodes[2].textContent}));
         }); 
         container.addEventListener('dragend', function (event) {
             event.target.style.opacity=1;

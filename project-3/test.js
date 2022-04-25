@@ -1,14 +1,18 @@
 const proj = L.CRS.EPSG3857;
 
-var map = L.map('map').setView([43.32, 21.88], 13);
-var popup = L.popup();
-
 var STATE = {
     polygons: [],
     wms: {
         layers: ['nis_bato'] },
     all_layers: [],
     selected_layers: [],
+    currentLayer: -1,
+    mode: 'Selection',
+    modeTransitions: {
+        'Selection': 'Edit',
+        'Edit': 'Selection'
+    },
+    drawnItems: new L.FeatureGroup(),
 
     setSelectedLayers: function(newLayers){
         this.selected_layers = newLayers
@@ -17,6 +21,39 @@ var STATE = {
     getSelectedLayerNames: function(){
         layerNames = this.all_layers.filter((item, i) => this.selected_layers[i]);
         return layerNames;
+    },
+
+    setMode: function(newMode){
+        if (!['Selection', 'Edit'].includes(newMode)){
+            return
+        }
+
+        this.mode = newMode
+        modeSwitchLabel = document.getElementById('layers-mode-label');
+        modeSwitchLabel.innerHTML = newMode;
+        map.off('click');
+
+        if (newMode === 'Selection'){
+                map.removeLayer(STATE.drawnItems)
+                map.removeControl(drawControl)
+                map.on('click', onMapClickSelectionMode);
+                map.off(L.Draw.Event.CREATED);
+            }
+        else if (newMode === 'Edit'){
+
+                map.addLayer(STATE.drawnItems);
+                drawControl = new L.Control.Draw({
+                    edit: {
+                        featureGroup: STATE.drawnItems,
+                    }
+                }),
+                map.addControl(drawControl)
+                map.on('click', onMapClickEditMode);
+                map.on(L.Draw.Event.CREATED, function (e){
+                    let layer = e.layer;
+                    STATE.drawnItems.addLayer(layer)
+                });
+            }
     },
 
     layers_listener: function(newLayers){
@@ -56,15 +93,26 @@ var STATE = {
                 arr = STATE.selected_layers.slice();
                 arr.splice(parseInt(this.firstChild.value), 0, src.checked);
                 arr.splice(parseInt(src.value) + 1, 1);
-                STATE.setSelectedLayers(arr)
+                STATE.setSelectedLayers(arr);
             }
-            console.log(STATE.all_layers)
+
+            switch(STATE.currentLayer){
+                case src.value:
+                    STATE.currentLayer = this.firstChild.value;
+                    break;
+                case this.firstChild.value:
+                    STATE.currentLayer = src.value;
+                    break
+            }
+
             renderLayersList({
                 'layersList':STATE.all_layers,
                 'toggleList':STATE.selected_layers,
+                'currentLayer':STATE.currentLayer,
                 'slectionHandler':STATE.handleSelection,
                 'dropHandler':STATE.handleDrop,
-                'clickHandler':STATE.handleClick,
+                'clickHandler':STATE.handleResetBtnClick,
+                'radioClickHandler':STATE.handleRadioClick,
             });
         }
         
@@ -79,8 +127,17 @@ var STATE = {
         STATE.setSelectedLayers(arr)
     },
 
-    handleClick: function(event){
+    handleResetBtnClick: function(event){
+        STATE.currentLayer = -1
         GetCapabilities();
+    },
+
+    handleRadioClick: function(event){
+        STATE.currentLayer = event.currentTarget.value
+    },
+
+    handleModeChangeClick: function(event) {
+        STATE.setMode(STATE.modeTransitions[STATE.mode])
     }
 }
 
@@ -104,15 +161,14 @@ function GetCapabilities(){
         renderLayersList({
             'layersList':STATE.all_layers,
             'toggleList':STATE.selected_layers,
+            'currentLayer':STATE.currentLayer,
             'slectionHandler':STATE.handleSelection,
             'dropHandler':STATE.handleDrop,
-            'clickHandler':STATE.handleClick,
+            'clickHandler':STATE.handleResetBtnClick,
+            'radioClickHandler':STATE.handleRadioClick,
         });
     })
 }
-
-
-
 
 function drawLegend(e){
 
@@ -150,7 +206,12 @@ function drawLegend(e){
       });
 }
 
-function onMapClick(e) {
+function onMapClickEditMode(e) {
+    console.log('EditMode');
+    console.log(L.drawVersion)
+}
+
+function onMapClickSelectionMode(e) {
     if (STATE.getSelectedLayerNames().length == 0){
         STATE.polygons.forEach(element => map.removeLayer(element))
         console.log('No Layers Added')
@@ -199,8 +260,13 @@ function draw_single_way(obj, e){
         createFeatureRepresentation(geom, feature.geometry.type).addTo(map));
 }
 
+var map = L.map('map').setView([43.32, 21.88], 13);
+var popup = L.popup();
 
 GetCapabilities()
-map.on('click', onMapClick);
+
+modeSwitchBtn = document.getElementById('layers-mode');
+modeSwitchBtn.addEventListener('click', STATE.handleModeChangeClick)
+map.on('click', onMapClickSelectionMode);
 //map.on('zoom', drawLegend);
 //map.on('move', drawLegend);

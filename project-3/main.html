@@ -2,13 +2,11 @@
 <html>
 <head>
    <title>Page Title</title>
-   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css"
-      integrity="sha512-xodZBNTC5n17Xt2atTPuE1HxjVMSvLVW9ocqUKLsCC5CXdbqCmblAshOMAS6/keqq/sMZMZ19scR4PsZChSR7A=="
-      crossorigin=""/>
+   <link rel="stylesheet" href="node_modules/leaflet/dist/leaflet.css"/>
    <link rel="stylesheet" href="main.css"/>
-   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"
-      integrity="sha512-XQoYMqMTK8LvdxXYG3nZ448hOEQiglfqkJs1NOQV44cWnUrBc8PkAOcXy20w0vlaXaVUearIOBhiXZ5V3ynxwA=="
-      crossorigin=""></script>
+   <link rel="stylesheet" href="node_modules/leaflet-draw/dist/leaflet.draw.css"/>
+   <script src="node_modules/leaflet/dist/leaflet.js"></script>
+   <script src="node_modules/leaflet-draw/dist/leaflet.draw.js"></script>
 </head>
 <body>
    <div>
@@ -19,7 +17,11 @@
       </div>
       <div id="controlDiv" class="floatChild container">
          <ul id="layers-list" class="layersList"></ul>
-         <button id="layers-reset" class="layersList">Reset</button>
+         <div id="layers-controls">
+            <button id="layers-reset" class="layersList">Reset</button>
+            <button id="layers-mode" class="layersList">Change mode</button>
+            <label for="layers-mode" id="layers-mode-label">Selection</label>
+         </div>
       </div>
    </div>
 
