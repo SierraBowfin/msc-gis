@@ -1,6 +1,6 @@
 #map {
     height: 600px;
-    width:600px }
+    width:800px }
 #controlDiv {width: auto;}
 
 .floatChild {
@@ -28,4 +28,11 @@
 
 .listElement.over {
     border: 3px dotted #f00;
+}
+
+.formDivStyle {
+    height: 600px;
+    width: 350px;
+    background-color: #ddd;
+    overflow:scroll;
 }
