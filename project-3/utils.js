@@ -25,12 +25,23 @@ function zoomToScale(zoom){
     return scale
 }
 
+function mapGmlType2LeafletType(gmlType){
+    if (gmlType === "Geometry")
+        return ['polygon', 'rectangle', 'circle'];
+    if (gmlType === "LineString")
+        return ['polyline'];
+    if (gmlType === "Point")
+        return ['marker', 'circlemarker'];
+
+    return undefined;
+}
+
 function reproject_geometry(coordinates, ftType){
     var new_coords = []
 
     switch(ftType){
         case 'Point':
-            new_coords = proj.unproject(L.point(feature.geometry.coordinates));
+            new_coords = proj.unproject(L.point(coordinates));
             break;
         case 'Polygon':
             coordinates.forEach(
@@ -76,10 +87,10 @@ function createFeatureRepresentation(ftCoords, ftType){
 
 function createAttributeTable(attObject){
 
-    var table = document.createElement('table');
-    var thead = table.createTHead()
-    var row = thead.insertRow()
-    head_text = ['Attribute', 'Value']
+    let table = document.createElement('table');
+    let thead = table.createTHead();
+    let row = thead.insertRow();
+    const head_text = ['Attribute', 'Value']
     for (var x of head_text){
         var th = document.createElement('th');
         var text = document.createTextNode(x);
@@ -90,46 +101,48 @@ function createAttributeTable(attObject){
     for (const key of Object.keys(attObject)){
         if (attObject[key] == null)
             continue;
-        var row = table.insertRow();
-        cell_att = row.insertCell();
+        let data_row = table.insertRow();
+        cell_att = data_row.insertCell();
         cell_att.appendChild(document.createTextNode(key));
-        cell_val = row.insertCell();
+        cell_val = data_row.insertCell();
         cell_val.appendChild(document.createTextNode(attObject[key]));
     }    
 
     return table
 }
 
-function renderLayersList(props) {
+function RenderLayerList(props){
     let layersDOM = document.getElementById('layers-list')
     while (layersDOM.firstChild) {
         layersDOM.removeChild(layersDOM.lastChild);
       }
 
-    console.log(props.toggleList)
-    props.layersList.forEach((layer, idx) => {
+    console.log(props.layerList.map(el => el.selected))
+    props.layerList.forEach((layer, idx) => {
         let listItem = document.createElement('li');
 
         let inputEl = document.createElement('input');
         inputEl.setAttribute('type', 'checkbox');
         inputEl.setAttribute('value', idx);
-        inputEl.setAttribute('checked', props.toggleList[idx]);
-        inputEl.checked = props.toggleList[idx];
-        inputEl.addEventListener('change', props.slectionHandler);
+        inputEl.setAttribute('checked', layer.selected);
+        inputEl.checked = layer.selected;
+        inputEl.addEventListener('change', function(event){
+            props.slectionHandler(this, event)
+        });
 
         selector = document.createElement('input');
         selector.setAttribute('type', 'radio');
         selector.setAttribute('name', 'sel_layer');
         selector.setAttribute('value', idx);
         selector.checked = idx === parseInt(props.currentLayer);
-        selector.addEventListener('click', props.radioClickHandler);
+        selector.addEventListener('click',function(e){ return props.radioClickHandler(this,e)});
         
         container = document.createElement('div');
         container.setAttribute('class','listElement');
         container.setAttribute('draggable', true)
         container.appendChild(inputEl);
         container.appendChild(selector);
-        container.appendChild(document.createTextNode(layer));
+        container.appendChild(document.createTextNode(layer.name));
         
 
         container.addEventListener('dragstart', function (event) {
@@ -155,12 +168,71 @@ function renderLayersList(props) {
             event.preventDefault();
             return false;
         });
-        container.addEventListener('drop', props.dropHandler);
+        container.addEventListener('drop', function(e) {props.dropHandler(this, e)});
 
         listItem.appendChild(container);
         layersDOM.appendChild(listItem);
     })
+}
 
-    let resetBtn = document.getElementById('layers-reset');
-    resetBtn.addEventListener('click', props.clickHandler)
+function RenderLayerControls(props){
+
+    let layersControlDOM = document.getElementById('layers-controls')
+
+    let resetBtn = document.createElement('button');
+    resetBtn.setAttribute('id', 'layers-reset');
+    resetBtn.setAttribute('class', 'layersList');
+    resetBtn.innerHTML = 'Reset'
+    resetBtn.addEventListener('click', function(e) {props.resetBtnClickHandler(this, e)});
+
+    let chModeBtn = document.createElement('button')
+    chModeBtn.setAttribute('id', 'layers-mode');
+    chModeBtn.setAttribute('class', 'layersList');
+    chModeBtn.innerHTML = 'Change Mode';
+    chModeBtn.addEventListener('click', function(e) {props.chModeBtnHandler(this, e)});
+
+    let chModeLabel = document.createElement('label')
+    chModeLabel.setAttribute('for', chModeBtn.getAttribute('id'));
+    chModeLabel.setAttribute('id', 'layers-mode-label');
+
+    layersControlDOM.appendChild(resetBtn);
+    layersControlDOM.appendChild(chModeBtn);
+    layersControlDOM.appendChild(chModeLabel);
+}
+
+function RenderAddForm(props) {
+
+    if (props.attributes === null){
+        let formDiv = document.getElementById('formDiv');
+        while (formDiv.firstChild){
+            formDiv.removeChild(formDiv.lastChild)
+        }
+        formDiv.removeAttribute('class')
+        formDiv.replaceWith(formDiv.cloneNode(true));
+        return
+    }
+    
+    let formDiv = document.getElementById('formDiv');
+    formDiv.setAttribute('class', 'formDivStyle');
+    formDiv.setAttribute('action', 'javascript:');
+    formDiv.addEventListener('submit', function(e) { props.submitHandler(this, e) });
+    props.attributes.forEach(attribute => {
+
+        let textBox = document.createElement('input')
+        textBox.setAttribute('type', 'text');
+        textBox.setAttribute('id', attribute.name);
+        textBox.setAttribute('name', attribute.name);
+
+        let label = document.createElement('label');
+        label.setAttribute('for', textBox.getAttribute('id'));
+        label.innerHTML = attribute.name;
+        
+        formDiv.appendChild(textBox);
+        formDiv.appendChild(label);
+        formDiv.appendChild(document.createElement('br'));
+    });
+
+    let submit = document.createElement('input');
+    submit.setAttribute('type', 'submit');
+    formDiv.appendChild(submit) 
 }
