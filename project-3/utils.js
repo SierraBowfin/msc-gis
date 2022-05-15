@@ -111,6 +111,34 @@ function createAttributeTable(attObject){
     return table
 }
 
+function createPostXML(app, attArray, geomIndex){
+    let xml = document.implementation.createDocument('','', null);
+    let transaction = document.createElementNS(wfsUri,'wfs:Transaction');
+    transaction.setAttribute('service', 'WFS');
+    transaction.setAttribute('version', '1.1.0');
+    let insert = document.createElementNS(wfsUri,'wfs:Insert');
+    let typeNS = document.createElementNS('http://geoserver.org/nis', app.layers[app.currentLayer].name)
+
+
+    attArray.forEach(el => {
+        if (el.attributeValue !== ''){
+            let attXml = xml.createElementNS('http://geoserver.org/nis', 'nis:' + el.attributeName );
+            attXml.appendChild(xml.createTextNode(el.attributeValue));
+            typeNS.appendChild(attXml);
+        }
+    });
+    let wayXml = xml.createElementNS('http://geoserver.org/nis', 'nis:way');
+    console.log(app.layers[app.currentLayer].drawnItems.getLayers()[geomIndex]);
+    wayXml.appendChild(app.layers[app.currentLayer].drawnItems.getLayers()[geomIndex].toGml(proj, xml));
+
+    typeNS.appendChild(wayXml);
+    insert.appendChild(typeNS);
+    transaction.appendChild(insert);
+    xml.appendChild(transaction);
+
+    return xml;
+}
+
 function RenderLayerList(props){
     let layersDOM = document.getElementById('layers-list')
     while (layersDOM.firstChild) {

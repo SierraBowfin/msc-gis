@@ -118,7 +118,7 @@ class App{
             layers: this.selectedLayersNames,
             format: 'image/png',
             transperent: true
-        })
+        });
         wms_tileLayer.addTo(this.map)
     }
 
@@ -131,29 +131,7 @@ class App{
             return ret;
         })
 
-        let xml = document.implementation.createDocument('','', null);
-        let transaction = document.createElementNS(wfsUri,'wfs:Transaction');
-        transaction.setAttribute('service', 'WFS');
-        transaction.setAttribute('version', '1.1.0');
-        let insert = document.createElementNS(wfsUri,'wfs:Insert');
-        let typeNS = document.createElementNS('http://geoserver.org/nis', this.layers[this.currentLayer].name)
-
-
-        attArray.forEach(el => {
-            if (el.attributeValue !== ''){
-                let attXml = xml.createElementNS('http://geoserver.org/nis', 'nis:' + el.attributeName );
-                attXml.appendChild(xml.createTextNode(el.attributeValue));
-                typeNS.appendChild(attXml);
-            }
-        });
-        let wayXml = xml.createElementNS('http://geoserver.org/nis', 'nis:way');
-        console.log(this.layers[this.currentLayer].drawnItems.getLayers()[0]);
-        wayXml.appendChild(this.layers[this.currentLayer].drawnItems.getLayers()[0].toGml(proj, xml));
-
-        typeNS.appendChild(wayXml);
-        insert.appendChild(typeNS);
-        transaction.appendChild(insert);
-        xml.appendChild(transaction);
+        let xml = createPostXML(this, attArray, 0);
         console.log(xml)
 
         const params = {
@@ -163,14 +141,26 @@ class App{
         }
         
         const request = this.url + '?' + createURLParams(params)
-    
+
         fetch(request, {
             method: 'POST',
             body: (new XMLSerializer()).serializeToString(xml)
         })
             .then(response => response.text())
             .then(str => new window.DOMParser().parseFromString(str, "text/xml"))
-            .then(data => console.log(data));
+            .then(data => console.log(data))
+            .then(() => {
+                let drawn = this.layers[this.currentLayer].drawnItems.getLayers()[0];
+                drawn.remove();
+                drawn.removeFrom(this.layers[this.currentLayer].drawnItems);
+                drawn = this.layers[this.currentLayer].drawnItems.getLayers()[0];
+                drawn.setStyle({
+                    color: 'red',
+                    fillColor: '#f03',
+                    fillOpacity: 0.5,
+                })
+            })
+            .then(this.loadLayers());
     }
 
     handleDrop(dragDstEl, event) {
@@ -223,7 +213,8 @@ class App{
     }
 
     handleResetBtnClick(button, event) {
-        this.currentLayer = 0
+        this.setMode("selection");
+        this.currentLayer = '0';
         this.getCapabilities();
     }
 
@@ -237,7 +228,16 @@ class App{
     }
 
     handleDrawCreated(caller, event){
-        this.layers[this.currentLayer].drawnItems.addLayer(event.layer);
+        let new_layer = event.layer;
+        if (this.layers[this.currentLayer].drawnItems.getLayers().length === 0) {
+            console.log('FIRST');
+            new_layer.setStyle({
+                color: 'red',
+                fillColor: '#f03',
+                fillOpacity: 0.5,
+            });
+        }
+        this.layers[this.currentLayer].drawnItems.addLayer(new_layer);
     }
 
     handleChMode(caller, event) {
