@@ -276,6 +276,9 @@ class App{
 
     handleFilterButtonClick(caller, event) {
         let filter = arguments[2];
+        if (filter === '')
+            filter = 'INCLUDE';
+
         this.layers[this.currentLayer].cql_filter = filter;
         
         let resFilter = ''
@@ -284,7 +287,6 @@ class App{
         })
         
         resFilter = resFilter.slice(0, -1);
-        console.log(resFilter);
         this.loadLayers(resFilter);
     }
 
