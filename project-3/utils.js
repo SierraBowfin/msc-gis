@@ -222,10 +222,41 @@ function RenderLayerControls(props){
     let chModeLabel = document.createElement('label')
     chModeLabel.setAttribute('for', chModeBtn.getAttribute('id'));
     chModeLabel.setAttribute('id', 'layers-mode-label');
+    chModeLabel.appendChild(document.createTextNode('selection'));
 
     layersControlDOM.appendChild(resetBtn);
     layersControlDOM.appendChild(chModeBtn);
     layersControlDOM.appendChild(chModeLabel);
+}
+
+function RenderFilterControl(props){
+    let dropdown = document.createElement('select');
+    dropdown.setAttribute('id','filter-list');
+
+    props.attributes.forEach(el => {
+        let option = document.createElement('option');
+        option.appendChild(document.createTextNode(el.name));
+        dropdown.appendChild(option);
+    });
+
+    let filterButton = document.createElement('input');
+    filterButton.setAttribute('type', 'button');
+    filterButton.setAttribute('value', 'Filter');
+
+    let filterText = document.createElement('input');
+    filterText.setAttribute('type', 'text');
+
+    dropdown.addEventListener('change', e => {
+        filterText.value = `${dropdown.options[dropdown.selectedIndex].value}`;
+    })
+    filterButton.addEventListener('click', function(e) { props.filterBtnClickHandler(this, e, filterText.value)});
+
+    let div = document.getElementById('layer-filter');
+    let divInter = document.createElement('div');
+    divInter.appendChild(dropdown);
+    divInter.appendChild(filterButton);
+    div.append(divInter);
+    div.appendChild(filterText);
 }
 
 function RenderAddForm(props) {

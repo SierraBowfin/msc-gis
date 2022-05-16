@@ -5,6 +5,7 @@ class GeoLayer {
     constructor(name, selected){
         this.name = name;
         this.selected = selected;
+        this.cql_filter = 'INCLUDE';
     }
 }
 
@@ -38,6 +39,11 @@ class App{
     get selectedLayersNames() {
         let layerNames = this.layers.filter((item) => item.selected);
         return layerNames.map(value => value.name);
+    }
+
+    get selectedLayerFilters() {
+        let layerFilters = this.layers.filter(item => item.selected);
+        return layerFilters.map(value => value.cql_filter);
     }
 
     setLayers(newLayers){
@@ -113,12 +119,24 @@ class App{
         return ctrl;
     } 
 
-    loadLayers() {
-        let wms_tileLayer = L.tileLayer.wms("http://localhost:8080/geoserver/nis/wms",{
+    loadLayers(cql_filter) {
+        if (cql_filter === undefined){
+            console.log(this.layers)
+            cql_filter = '';
+            let filters = this.selectedLayerFilters;
+            filters.forEach(el => cql_filter += el + ';')
+            cql_filter = cql_filter.slice(0, -1);
+        }
+        console.log(cql_filter)
+
+        let options = {
             layers: this.selectedLayersNames,
             format: 'image/png',
-            transperent: true
-        });
+            transperent: true,
+            cql_filter: cql_filter,
+        }
+
+        let wms_tileLayer = L.tileLayer.wms("http://localhost:8080/geoserver/nis/wms", options);
         wms_tileLayer.addTo(this.map)
     }
 
@@ -170,7 +188,7 @@ class App{
         if (dragSrcEl !== dragDstEl) {
             let src = JSON.parse(event.dataTransfer.getData('text/plain'));
             let arr = this.layers.slice();
-            const layerChange = new GeoLayer(src.text, src.checked)
+            const layerChange = this.layers.filter(el => src.text === el.name)[0];
 
             if (src.value < parseInt(dragDstEl.firstChild.value)){
                 arr.splice(parseInt(dragDstEl.firstChild.value) + 1, 0, layerChange);
@@ -254,6 +272,20 @@ class App{
             this.setMode('selection');
             return;
         }
+    }
+
+    handleFilterButtonClick(caller, event) {
+        let filter = arguments[2];
+        this.layers[this.currentLayer].cql_filter = filter;
+        
+        let resFilter = ''
+        this.layers.filter(el => el.selected).forEach(el => {
+            resFilter += el.cql_filter + ';'
+        })
+        
+        resFilter = resFilter.slice(0, -1);
+        console.log(resFilter);
+        this.loadLayers(resFilter);
     }
 
     handleMapClick(caller, e) {
@@ -350,9 +382,16 @@ class App{
                     .then(data=> {
                         data.featureTypes.forEach((el, index) => {
                             let way = el.properties.filter(el => el.name === 'way');
-                            this.layers[index].type = mapGmlType2LeafletType(way[0].localType)
-                            this.layers[index].attributes = el.properties.filter(el => el.name).slice(0,-2)
+                            this.layers[index].type = mapGmlType2LeafletType(way[0].localType);
+                            this.layers[index].attributes = el.properties.filter(el => el.name).slice(0,-2);
                         })
+                    })
+                    .then(() => {
+                        console.log(this.layers[this.currentLayer])
+                        RenderFilterControl({
+                            'filterBtnClickHandler': this.handleFilterButtonClick.bind(this),
+                            'attributes': this.layers[this.currentLayer].attributes,
+                        });
                     });
             });
     }

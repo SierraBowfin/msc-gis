@@ -18,6 +18,13 @@
     padding-inline-start:5px;
 }
 
+.control {
+    padding:5px;
+}
+#layers-mode-label {
+    padding: 5px;
+}
+
 .listElement {
     border: 3px solid #666;
     background-color: #ddd;
