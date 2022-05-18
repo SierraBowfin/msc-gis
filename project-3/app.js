@@ -60,7 +60,8 @@ class App{
 
         if (this.mode === 'selection'){
             this.map.removeLayer(this.layers[this.currentLayer].drawnItems);
-            this.map.removeControl(this.drawControl);
+            if(this.drawControl !== undefined)
+                this.map.removeControl(this.drawControl);
             RenderAddForm({
                 'attributes': null
             });
@@ -121,7 +122,6 @@ class App{
 
     loadLayers(cql_filter) {
         if (cql_filter === undefined){
-            console.log(this.layers)
             cql_filter = '';
             let filters = this.selectedLayerFilters;
             filters.forEach(el => cql_filter += el + ';')
@@ -264,7 +264,6 @@ class App{
     handleDrawCreated(caller, event){
         let new_layer = event.layer;
         if (this.layers[this.currentLayer].drawnItems.getLayers().length === 0) {
-            console.log('FIRST');
             new_layer.setStyle({
                 color: 'red',
                 fillColor: '#f03',
@@ -400,7 +399,6 @@ class App{
                         })
                     })
                     .then(() => {
-                        console.log(this.layers[this.currentLayer])
                         RenderFilterControl({
                             'filterBtnClickHandler': this.handleFilterButtonClick.bind(this),
                             'attributes': this.layers[this.currentLayer].attributes, 
