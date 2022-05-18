@@ -171,7 +171,6 @@ function RenderLayerList(props){
         container.appendChild(inputEl);
         container.appendChild(selector);
         container.appendChild(document.createTextNode(layer.name));
-        
 
         container.addEventListener('dragstart', function (event) {
             event.target.style.opacity=0.5;
@@ -197,6 +196,7 @@ function RenderLayerList(props){
             return false;
         });
         container.addEventListener('drop', function(e) {props.dropHandler(this, e)});
+        container.addEventListener('mouseenter', function(e) {props.filterMOverHandler(this, e)});
 
         listItem.appendChild(container);
         layersDOM.appendChild(listItem);
@@ -243,18 +243,25 @@ function RenderFilterControl(props){
     filterButton.setAttribute('type', 'button');
     filterButton.setAttribute('value', 'Filter');
 
+    let clearButton = document.createElement('input');
+    clearButton.setAttribute('type','button');
+    clearButton.setAttribute('value', 'Clear');
+
     let filterText = document.createElement('input');
     filterText.setAttribute('type', 'text');
+    filterText.setAttribute('id', 'filter-textbox');
 
     dropdown.addEventListener('change', e => {
         filterText.value = `${dropdown.options[dropdown.selectedIndex].value}`;
     })
     filterButton.addEventListener('click', function(e) { props.filterBtnClickHandler(this, e, filterText.value)});
+    clearButton.addEventListener('click', function(e) { props.clearBtnClickHandler(this, e)});
 
     let div = document.getElementById('layer-filter');
     let divInter = document.createElement('div');
     divInter.appendChild(dropdown);
     divInter.appendChild(filterButton);
+    divInter.appendChild(clearButton);
     div.append(divInter);
     div.appendChild(filterText);
 }

@@ -217,10 +217,26 @@ class App{
                 'slectionHandler':this.handleSelection.bind(this),
                 'dropHandler':this.handleDrop.bind(this),
                 'radioClickHandler':this.handleRadioClick.bind(this),
+                'filterMOverHandler': this.handleFilterMOver.bind(this),
             });
         }
         
         return false;
+    }
+
+    handleClearBtnClick(caller, event) {
+        this.layers.forEach(el => {
+            el.cql_filter = 'INCLUDE';
+        });
+
+        document.getElementById('filter-textbox').value = '';
+
+        this.loadLayers();
+    }
+
+    handleFilterMOver(caller, event){
+        let ind = caller.firstChild.value;
+        caller.setAttribute('title', this.layers[ind].cql_filter);
     }
 
     handleSelection(checkbox, event) {
@@ -281,13 +297,7 @@ class App{
 
         this.layers[this.currentLayer].cql_filter = filter;
         
-        let resFilter = ''
-        this.layers.filter(el => el.selected).forEach(el => {
-            resFilter += el.cql_filter + ';'
-        })
-        
-        resFilter = resFilter.slice(0, -1);
-        this.loadLayers(resFilter);
+        this.loadLayers();
     }
 
     handleMapClick(caller, e) {
@@ -362,6 +372,7 @@ class App{
                     'slectionHandler':this.handleSelection.bind(this),
                     'dropHandler':this.handleDrop.bind(this),
                     'radioClickHandler':this.handleRadioClick.bind(this),
+                    'filterMOverHandler': this.handleFilterMOver.bind(this),
                 });
 
                 this.layers.forEach(layer => {
@@ -392,7 +403,8 @@ class App{
                         console.log(this.layers[this.currentLayer])
                         RenderFilterControl({
                             'filterBtnClickHandler': this.handleFilterButtonClick.bind(this),
-                            'attributes': this.layers[this.currentLayer].attributes,
+                            'attributes': this.layers[this.currentLayer].attributes, 
+                            'clearBtnClickHandler': this.handleClearBtnClick.bind(this),
                         });
                     });
             });
