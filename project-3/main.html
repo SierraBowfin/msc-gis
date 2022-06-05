@@ -10,17 +10,21 @@
 </head>
 <body>
    <div>
-      <div id="map" class="floatChild"></div>
-      <div id="legendDiv"class="floatChild">
-         <!-- <p>Legend</p> -->
-         <img id="legend"></img>
+      <div>
+         <div id="map" class="floatChild"></div>
+         <div id="legendDiv"class="floatChild">
+            <!-- <p>Legend</p> -->
+            <img id="legend"></img>
+         </div>
+         <div id="controlDiv" class="floatChild container">
+            <ul id="layers-list" class="layersList"></ul>
+            <div id="layers-controls" class="control"></div>
+            <div id="layer-filter" class="control"></div>
+         </div>
+         <form id="formDiv"></form>
       </div>
-      <div id="controlDiv" class="floatChild container">
-         <ul id="layers-list" class="layersList"></ul>
-         <div id="layers-controls" class="control"></div>
-         <div id="layer-filter" class="control"></div>
+      <div id="query-container" class="inner-div">
       </div>
-      <form id="formDiv"></form>
    </div>
 
    <script src="leaflet-ext.js"></script>

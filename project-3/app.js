@@ -121,13 +121,10 @@ class App{
     } 
 
     loadLayers(cql_filter) {
-        if (cql_filter === undefined){
-            cql_filter = '';
-            let filters = this.selectedLayerFilters;
-            filters.forEach(el => cql_filter += el + ';')
-            cql_filter = cql_filter.slice(0, -1);
-        }
-        console.log(cql_filter)
+        cql_filter = '';
+        let filters = this.selectedLayerFilters;
+        filters.forEach(el => cql_filter += el + ';')
+        cql_filter = cql_filter.slice(0, -1);
 
         let options = {
             layers: this.selectedLayersNames,
@@ -158,7 +155,7 @@ class App{
             request: 'Transaction',
         }
         
-        const request = this.url + '?' + createURLParams(params)
+        const request = this.url + '/wfs?' + createURLParams(params)
 
         fetch(request, {
             method: 'POST',
@@ -319,7 +316,7 @@ class App{
             cql_filter: `DWITHIN(way,POINT(${point.x} ${point.y}),5,meters)`
         }
     
-        const request = this.url + '?' + createURLParams(params)
+        const request = this.url + '/wfs?' + createURLParams(params)
     
         fetch(request)
             .then(response => response.json())
@@ -388,7 +385,7 @@ class App{
                     outputFormat: 'application/json',
                 }
             
-                const request = this.url + '?' + createURLParams(params)
+                const request = this.url + '/wfs?' + createURLParams(params)
                 fetch(request)
                     .then(response => response.json())
                     .then(data=> {
@@ -404,9 +401,14 @@ class App{
                             'attributes': this.layers[this.currentLayer].attributes, 
                             'clearBtnClickHandler': this.handleClearBtnClick.bind(this),
                         });
+
+                        RenderSpatialQueryControl({
+                            'layers': this.layers,
+                        });
                     });
             });
     }
 }
 
-app = new App('http://localhost:8080/geoserver/nis/wfs')
+let app = new App('http://localhost:8080/geoserver/nis')
+

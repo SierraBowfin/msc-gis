@@ -43,3 +43,8 @@
     background-color: #ddd;
     overflow:scroll;
 }
+
+.inner-div{
+    float:left;
+    clear:left;
+}

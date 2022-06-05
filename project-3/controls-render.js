@@ -166,3 +166,44 @@ function RenderAddForm(props) {
     submit.setAttribute('type', 'submit');
     formDiv.appendChild(submit) 
 }
+
+function RenderSpatialQueryControl(props){
+    let queryContainer = document.getElementById("query-container");
+    let container = document.createElement('form');
+
+    let subjectA = document.createElement('select')
+    subjectA.setAttribute('name', 'A');
+    props.layers.forEach(el => {
+        let op = document.createElement('option');
+        op.appendChild(document.createTextNode(el.name));
+        op.setAttribute('value', el.name);
+        subjectA.appendChild(op);
+    })
+
+    let subjectB = document.createElement('select')
+    subjectB.setAttribute('name', 'B');
+    props.layers.forEach(el => {
+        let op = document.createElement('option');
+        op.appendChild(document.createTextNode(el.name));
+        op.setAttribute('value', el.name);
+        subjectB.appendChild(op);
+    })
+
+    let operation = document.createElement('select');
+    operation.setAttribute('name', 'operation');
+    CQL_SPATIAL_OPERATIONS.forEach(el => {
+        let op = document.createElement('option');
+        op.appendChild(document.createTextNode(el));
+        op.setAttribute('value', el);
+        operation.appendChild(op);
+    });
+
+    let submit = document.createElement('input');
+    submit.setAttribute('type', 'submit');
+
+    container.appendChild(subjectA);
+    container.appendChild(operation);
+    container.appendChild(subjectB);
+    container.appendChild(submit);
+    queryContainer.appendChild(container);
+}

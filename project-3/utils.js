@@ -1,3 +1,7 @@
+const CQL_SPATIAL_OPERATIONS= [
+    'EQUALS', 'DISJOINT', 'INTERSECTS', 'TOUCHES', 'CROSSES', 'WITHIN', 'CONTAINS', 'OVERLAPS', 'RELATE', 'DWITHIN', 'BEYOND'
+]
+
 function createURLParams(params){
     res_string = ''
     for (const key of Object.keys(params)){
