@@ -180,6 +180,10 @@ function RenderSpatialQueryControl(props){
         subjectA.appendChild(op);
     })
 
+    let filterA = document.createElement('input');
+    filterA.setAttribute('name', 'filterA');
+    filterA.setAttribute('type', 'text');
+
     let subjectB = document.createElement('select')
     subjectB.setAttribute('name', 'B');
     props.layers.forEach(el => {
@@ -188,6 +192,10 @@ function RenderSpatialQueryControl(props){
         op.setAttribute('value', el.name);
         subjectB.appendChild(op);
     })
+    
+    let filterB = document.createElement('input');
+    filterB.setAttribute('name', 'filterB');
+    filterB.setAttribute('type', 'text');
 
     let operation = document.createElement('select');
     operation.setAttribute('name', 'operation');
@@ -200,10 +208,19 @@ function RenderSpatialQueryControl(props){
 
     let submit = document.createElement('input');
     submit.setAttribute('type', 'submit');
+    let clear = document.createElement('button');
+    clear.appendChild(document.createTextNode('Clear'));
 
     container.appendChild(subjectA);
+    container.appendChild(filterA);
     container.appendChild(operation);
     container.appendChild(subjectB);
+    container.appendChild(filterB);
     container.appendChild(submit);
+
+    container.setAttribute('action', 'javascript:');
+    container.addEventListener('submit', function(e) { props.submitHandler(this, e) });
+
     queryContainer.appendChild(container);
+    queryContainer.appendChild(clear);
 }

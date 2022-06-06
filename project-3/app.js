@@ -22,7 +22,8 @@ class App{
             'Selection': 'Edit',
             'Edit': 'Selection'
         };
-        this.clickedItems = []
+        this.clickedItems = [];
+        this.queryItems = new L.FeatureGroup();
         this.mode = 'selection'
 
         this.getCapabilities();
@@ -324,6 +325,53 @@ class App{
             .then(data => this.clickedItems.forEach(element => element.openPopup(e.latlng)))
     }
 
+    handleQuerySubmit(caller, e) {
+        console.log(caller);
+        console.log(caller.getElementsByTagName('select'));
+
+        let A = caller.getElementsByTagName('select')['A'];
+        A = A.options[A.selectedIndex].value;
+
+        let B = caller.getElementsByTagName('select')['B'];
+        B = B.options[B.selectedIndex].value;
+        
+        let operation = caller.getElementsByTagName('select')['operation'];
+        operation = operation.options[operation.selectedIndex].value;
+
+        const params = {
+            service:'wfs',
+            version:'2.0.0',
+            request: 'GetFeature',
+            typeNames: A,
+            outputFormat: 'application/json',
+            cql_filter: `${operation}(way,collectGeometries(queryCollection('${B}', 'way', 'INCLUDE')))`
+        }
+    
+        const request = this.url + '/wfs?' + createURLParams(params)
+    
+        console.log(request)
+        fetch(request)
+            .then(response => response.json())
+            .then(data => this.drawAllWays(data, e));
+    }
+
+    drawAllWays(obj, e) {
+        this.map.removeLayer(this.queryItems);
+        this.queryItems.clearLayers();
+    
+        console.log(obj)
+        if (obj.features.length == 0) return;
+
+        obj.features.forEach(feature => {
+            let geom = reproject_geometry(feature.geometry.coordinates, feature.geometry.type);
+            this.queryItems.addLayer(
+                createFeatureRepresentation(geom, feature.geometry.type, {color:'green', fillColor: "seagreen"})
+            );
+        });
+
+        this.map.addLayer(this.queryItems);
+    }
+
     draw_first_way(obj, e){
         this.clickedItems.forEach(element => this.map.removeLayer(element))
         this.clickedItems = []
@@ -404,6 +452,7 @@ class App{
 
                         RenderSpatialQueryControl({
                             'layers': this.layers,
+                            'submitHandler': this.handleQuerySubmit.bind(this),
                         });
                     });
             });

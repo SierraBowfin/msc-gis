@@ -64,27 +64,33 @@ function reproject_geometry(coordinates, ftType){
     return new_coords
 }
 
-function createFeatureRepresentation(ftCoords, ftType){
+function createFeatureRepresentation(ftCoords, ftType, color){
     switch(ftType){
         case 'Point':
-            element = L.circle(ftCoords, {
+            opts = {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.5,
                 radius: 5
-            })
+            };
+            Object.assign(opts, color);
+            element = L.circle(ftCoords, opts)
             break;
         case 'Polygon':
-            element = L.polygon(ftCoords, {
+            opts = {
                 color: 'red',
                 fillColor: '#f03',
                 fillOpacity: 0.5
-            })
+            }
+            Object.assign(opts, color);
+            element = L.polygon(ftCoords, opts);
             break;
         case 'LineString':
-            element = L.polyline(ftCoords,{
-                color:'red'
-            })          
+            opts = {
+                color: 'red',
+            }
+            Object.assign(opts, color);
+            element = L.polyline(ftCoords, opts)          
     }
     return element
 }
