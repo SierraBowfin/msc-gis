@@ -325,6 +325,11 @@ class App{
             .then(data => this.clickedItems.forEach(element => element.openPopup(e.latlng)))
     }
 
+    handleQueryClear(caller, e) {
+        this.map.removeLayer(this.queryItems);
+        this.queryItems.clearLayers();
+    }
+
     handleQuerySubmit(caller, e) {
         console.log(caller);
         console.log(caller.getElementsByTagName('select'));
@@ -372,7 +377,14 @@ class App{
     
         console.log(request)
         fetch(request)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok){
+                    alert(`BadRequest: ${response.status}`);
+                    throw new Error(`BadRequest: ${response.status}`)
+                }
+                alert(`Response status: ${response.status}, processing`)
+                return response.json();
+            })
             .then(data => this.drawAllWays(data, e));
     }
 
@@ -474,6 +486,7 @@ class App{
                         RenderSpatialQueryControl({
                             'layers': this.layers,
                             'submitHandler': this.handleQuerySubmit.bind(this),
+                            'clearHandler': this.handleQueryClear.bind(this),
                         });
                     });
             });

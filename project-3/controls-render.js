@@ -249,6 +249,7 @@ function RenderSpatialQueryControl(props){
 
     container.setAttribute('action', 'javascript:');
     container.addEventListener('submit', function(e) { props.submitHandler(this, e) });
+    clear.addEventListener('click', function(e) { props.clearHandler(this, e)});
 
     queryContainer.appendChild(container);
     queryContainer.appendChild(clear);
