@@ -175,7 +175,7 @@ function RenderSpatialQueryControl(props){
     subjectA.setAttribute('name', 'A');
     props.layers.forEach(el => {
         let op = document.createElement('option');
-        op.appendChild(document.createTextNode(el.name));
+        op.appendChild(document.createTextNode(el.name.split(':')[1]));
         op.setAttribute('value', el.name);
         subjectA.appendChild(op);
     })
@@ -188,7 +188,7 @@ function RenderSpatialQueryControl(props){
     subjectB.setAttribute('name', 'B');
     props.layers.forEach(el => {
         let op = document.createElement('option');
-        op.appendChild(document.createTextNode(el.name));
+        op.appendChild(document.createTextNode(el.name.split(':')[1]));
         op.setAttribute('value', el.name);
         subjectB.appendChild(op);
     })
@@ -205,6 +205,35 @@ function RenderSpatialQueryControl(props){
         op.setAttribute('value', el);
         operation.appendChild(op);
     });
+
+    operation.addEventListener('change', event => {
+        let target = event.target;
+        operation = target.options[target.selectedIndex].value;
+        console.log(operation);
+        if (['DWITHIN', 'BEYOND'].includes(operation)){
+            let distance = document.createElement('input');
+            distance.setAttribute('type', 'text');
+            distance.setAttribute('name', 'distance');
+            distance.setAttribute('id', 'distance-text');
+
+            let label = document.createElement('label');
+            label.setAttribute('id', 'distance-label');
+            label.appendChild(document.createTextNode('Distance: '));
+
+            target.parentNode.appendChild(label);
+            target.parentNode.appendChild(distance);
+        }
+        else {
+            let text = document.getElementById('distance-text');
+            let label = document.getElementById('distance-label');
+
+            if (text !== null)
+                text.parentNode.removeChild(text);
+            
+            if (text !== null)
+                label.parentNode.removeChild(label);
+        }
+    })
 
     let submit = document.createElement('input');
     submit.setAttribute('type', 'submit');

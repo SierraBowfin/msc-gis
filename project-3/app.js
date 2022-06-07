@@ -338,14 +338,35 @@ class App{
         let operation = caller.getElementsByTagName('select')['operation'];
         operation = operation.options[operation.selectedIndex].value;
 
+        let filterA = caller.getElementsByTagName('input')['filterA'].value;
+        let filterB = caller.getElementsByTagName('input')['filterB'].value; 
+
+        if (filterB == '')
+            filterB = 'INCLUDE';
+        if (filterA == '')
+            filterA = 'INCLUDE';
+
+        let distance = document.getElementById('distance-text');
+
+        let cql_filter = '';
+        if (distance !== null) {
+            distance = distance.value;
+            cql_filter = `${filterA} AND ${operation}(way,collectGeometries(queryCollection('${B}', 'way', '${filterB}')), ${distance}, meters)`
+        }
+        else {
+            cql_filter = `${filterA} AND ${operation}(way,collectGeometries(queryCollection('${B}', 'way', '${filterB}')))`;
+        }
+
         const params = {
             service:'wfs',
             version:'2.0.0',
             request: 'GetFeature',
             typeNames: A,
             outputFormat: 'application/json',
-            cql_filter: `${operation}(way,collectGeometries(queryCollection('${B}', 'way', 'INCLUDE')))`
+            cql_filter: cql_filter
         }
+
+        console.log(params);
     
         const request = this.url + '/wfs?' + createURLParams(params)
     
