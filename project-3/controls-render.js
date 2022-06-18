@@ -168,7 +168,11 @@ function RenderAddForm(props) {
 }
 
 function RenderSpatialQueryControl(props){
-    let queryContainer = document.getElementById("query-container");
+    let queryContainer = document.getElementById("spatial-query");
+    while (queryContainer.firstChild) {
+        queryContainer.removeChild(queryContainer.lastChild);
+      }
+
     let container = document.createElement('form');
 
     let subjectA = document.createElement('select')
@@ -196,6 +200,86 @@ function RenderSpatialQueryControl(props){
     let filterB = document.createElement('input');
     filterB.setAttribute('name', 'filterB');
     filterB.setAttribute('type', 'text');
+
+    let operation = document.createElement('select');
+    operation.setAttribute('name', 'operation');
+    CQL_SPATIAL_OPERATIONS.forEach(el => {
+        let op = document.createElement('option');
+        op.appendChild(document.createTextNode(el));
+        op.setAttribute('value', el);
+        operation.appendChild(op);
+    });
+
+    operation.addEventListener('change', event => {
+        let target = event.target;
+        operation = target.options[target.selectedIndex].value;
+        console.log(operation);
+
+        let text = document.getElementById('distance-text');
+        let label = document.getElementById('distance-label');
+
+        if (text !== null)
+            text.parentNode.removeChild(text);
+        
+        if (text !== null)
+            label.parentNode.removeChild(label);
+
+        if (['DWITHIN', 'BEYOND'].includes(operation)){
+            let distance = document.createElement('input');
+            distance.setAttribute('type', 'text');
+            distance.setAttribute('name', 'distance');
+            distance.setAttribute('id', 'distance-text');
+
+            let label = document.createElement('label');
+            label.setAttribute('id', 'distance-label');
+            label.appendChild(document.createTextNode('Distance: '));
+
+            target.parentNode.appendChild(label);
+            target.parentNode.appendChild(distance);
+        }
+    })
+
+    let submit = document.createElement('input');
+    submit.setAttribute('type', 'submit');
+    let clear = document.createElement('button');
+    clear.appendChild(document.createTextNode('Clear'));
+
+    container.appendChild(subjectA);
+    container.appendChild(filterA);
+    container.appendChild(operation);
+    container.appendChild(subjectB);
+    container.appendChild(filterB);
+    container.appendChild(submit);
+
+    container.setAttribute('action', 'javascript:');
+    container.addEventListener('submit', function(e) { props.submitHandler(this, e) });
+    clear.addEventListener('click', function(e) { props.clearHandler(this, e)});
+
+    queryContainer.appendChild(container);
+    queryContainer.appendChild(clear);
+}
+
+
+function RenderTemporalQueryControl(props){
+    let queryContainer = document.getElementById("temporal-query");
+    while (queryContainer.firstChild) {
+        queryContainer.removeChild(queryContainer.lastChild);
+      }
+
+    let container = document.createElement('form');
+
+    let subjectA = document.createElement('select')
+    subjectA.setAttribute('name', 'layer');
+    props.layers.forEach(el => {
+        let op = document.createElement('option');
+        op.appendChild(document.createTextNode(el.name.split(':')[1]));
+        op.setAttribute('value', el.name);
+        subjectA.appendChild(op);
+    })
+
+    let filterA = document.createElement('input');
+    filterA.setAttribute('name', 'filterA');
+    filterA.setAttribute('type', 'text');
 
     let operation = document.createElement('select');
     operation.setAttribute('name', 'operation');
