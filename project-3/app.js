@@ -9,12 +9,34 @@ class GeoLayer {
     }
 }
 
+class BufferedLayer {
+    constructor(url, map, options){
+        this.url = url
+        this.layers = new Array(2);
+        this.layers[0] = L.tileLayer.wms(url, options);
+        this.layers[0].addTo(map);
+        this.layers[1] = L.tileLayer.wms(url, options);
+        this.layers[1].addTo(map);
+        this.layers[1].bringToFront();
+    }
+
+    setParams(options) {
+        this.layers[0] = this.layers[1];
+        this.layers[0].bringToFront();
+        this.layers[1].setParams(options, false);
+        this.layers[1].on('load', e => {
+            this.layers[1].bringToFront();
+        })
+    }
+}
+
 class App{
 
     constructor(url){
         this.url = url;
         this.map = L.map('map').setView([43.32, 21.88], 13);
         this.wms_layer = 'nis_bato';
+        this.wmsBufferedLayer = null;
         this.layers = [];
         this.currentLayer = '0';
         this.mode = 'Selection';
@@ -132,10 +154,15 @@ class App{
             format: 'image/png',
             transperent: true,
             cql_filter: cql_filter,
-        }
+            v: new Date().valueOf().toString(),
+            }
 
-        let wms_tileLayer = L.tileLayer.wms("http://localhost:8080/geoserver/nis/wms", options);
-        wms_tileLayer.addTo(this.map)
+        if (this.wmsBufferedLayer === null)
+            this.wmsBufferedLayer = new BufferedLayer("http://localhost:8080/geoserver/nis/wms", this.map, options);
+        else
+            this.wmsBufferedLayer.setParams(options);
+
+        console.log(this.map._layers)
     }
 
     handleSubmit(caller, event) {
@@ -148,7 +175,6 @@ class App{
         })
 
         let xml = createPostXML(this, attArray, 0);
-        console.log(xml)
 
         const params = {
             service:'wfs',
@@ -169,12 +195,14 @@ class App{
                 let drawn = this.layers[this.currentLayer].drawnItems.getLayers()[0];
                 drawn.remove();
                 drawn.removeFrom(this.layers[this.currentLayer].drawnItems);
-                drawn = this.layers[this.currentLayer].drawnItems.getLayers()[0];
-                drawn.setStyle({
-                    color: 'red',
-                    fillColor: '#f03',
-                    fillOpacity: 0.5,
-                })
+                if (this.layers[this.currentLayer].drawnItems.length > 0) {
+                    drawn = this.layers[this.currentLayer].drawnItems.getLayers()[0];
+                    drawn.setStyle({
+                        color: 'red',
+                        fillColor: '#f03',
+                        fillOpacity: 0.5,
+                    })
+                }
             })
             .then(this.loadLayers());
     }
@@ -330,7 +358,68 @@ class App{
         this.queryItems.clearLayers();
     }
 
-    handleQuerySubmit(caller, e) {
+    handleTemporalQuerySubmit(caller, e) {
+        console.log(caller);
+
+        let A = caller.getElementsByTagName('select')['A'];
+        A = A.options[A.selectedIndex].value;
+
+        let operation = caller.getElementsByTagName('select')['operation'];
+        let domain = CQL_TEMPORAL_OPERATIONS.domain[operation.selectedIndex];
+        operation = operation.options[operation.selectedIndex].value;
+
+        let time = '';
+        if (domain === 'time') {
+            time = document.getElementById('time-datetime-picker')._flatpickr;
+            time = time.formatDate(time.selectedDates[0], 'Y-d-mTH:i:S');
+            console.log(time);
+        }
+        if (domain === 'timePeriod') {
+            let timeA = document.getElementById('timePeriodA-datetime-picker')._flatpickr;
+            let timeB = document.getElementById('timePeriodB-datetime-picker')._flatpickr;
+            timeA = timeA.formatDate(timeA.selectedDates[0], 'Y-d-mTH:i:S');
+            timeB = timeB.formatDate(timeB.selectedDates[0], 'Y-d-mTH:i:S');
+            time = `${timeA} / ${timeB}`;
+        }
+
+        let filterV = caller.getElementsByTagName('input')['filterV'].value;
+        let filterA = caller.getElementsByTagName('input')['filterA'].value;
+        let distance = document.getElementById('distance-text').value;
+
+        if (filterV == '')
+            filterV = 'INCLUDE';
+        if (filterA == '')
+            filterA = 'INCLUDE';
+
+        let cql_filter = `${filterA} AND DWITHIN(way, collectGeometries(queryCollection('nis:avl_datapoints', 'way', 'dtime ${operation} ${time} AND ${filterV}')), ${distance}, meters)`
+
+        const params = {
+            service:'wfs',
+            version:'2.0.0',
+            request: 'GetFeature',
+            typeNames: A,
+            outputFormat: 'application/json',
+            cql_filter: cql_filter
+        }
+
+        console.log(params);
+    
+        const request = this.url + '/wfs?' + createURLParams(params)
+    
+        console.log(request)
+        fetch(request)
+            .then(response => {
+                if (!response.ok){
+                    alert(`BadRequest: ${response.status}`);
+                    throw new Error(`BadRequest: ${response.status}`)
+                }
+                alert(`Response status: ${response.status}, processing`)
+                return response.json();
+            })
+            .then(data => this.drawAllWays(data, e));
+    }
+
+    handleSpatialQuerySubmit(caller, e) {
         console.log(caller);
         console.log(caller.getElementsByTagName('select'));
 
@@ -485,9 +574,15 @@ class App{
 
                         RenderSpatialQueryControl({
                             'layers': this.layers,
-                            'submitHandler': this.handleQuerySubmit.bind(this),
+                            'submitHandler': this.handleSpatialQuerySubmit.bind(this),
                             'clearHandler': this.handleQueryClear.bind(this),
                         });
+
+                        RenderTemporalQueryControl({
+                            'layers': this.layers,
+                            'clearHandler': this.handleSpatialQuerySubmit.bind(this),
+                            'submitHandler': this.handleTemporalQuerySubmit.bind(this),
+                        })
                     });
             });
     }

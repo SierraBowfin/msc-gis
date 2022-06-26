@@ -4,7 +4,6 @@ function RenderLayerList(props){
         layersDOM.removeChild(layersDOM.lastChild);
       }
 
-    console.log(props.layerList.map(el => el.selected))
     props.layerList.forEach((layer, idx) => {
         let listItem = document.createElement('li');
 
@@ -187,6 +186,7 @@ function RenderSpatialQueryControl(props){
     let filterA = document.createElement('input');
     filterA.setAttribute('name', 'filterA');
     filterA.setAttribute('type', 'text');
+    filterA.setAttribute('placeholder', 'Attribute filter A');
 
     let subjectB = document.createElement('select')
     subjectB.setAttribute('name', 'B');
@@ -200,6 +200,7 @@ function RenderSpatialQueryControl(props){
     let filterB = document.createElement('input');
     filterB.setAttribute('name', 'filterB');
     filterB.setAttribute('type', 'text');
+    filterB.setAttribute('placeholder', 'Attribute filter B');
 
     let operation = document.createElement('select');
     operation.setAttribute('name', 'operation');
@@ -244,9 +245,19 @@ function RenderSpatialQueryControl(props){
     let clear = document.createElement('button');
     clear.appendChild(document.createTextNode('Clear'));
 
+    container.appendChild(document.createTextNode(
+        `Select all objects of [Layer A] with [Filter A]
+        that are in [Spatial Relation] with
+        objects of [Layer B] wiht [Filter B]`));
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode(`Layer A: `));
     container.appendChild(subjectA);
     container.appendChild(filterA);
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode(`Spatial Relation: `));
     container.appendChild(operation);
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode(`Layer B: `));
     container.appendChild(subjectB);
     container.appendChild(filterB);
     container.appendChild(submit);
@@ -269,21 +280,28 @@ function RenderTemporalQueryControl(props){
     let container = document.createElement('form');
 
     let subjectA = document.createElement('select')
-    subjectA.setAttribute('name', 'layer');
+    subjectA.setAttribute('name', 'A');
     props.layers.forEach(el => {
         let op = document.createElement('option');
         op.appendChild(document.createTextNode(el.name.split(':')[1]));
         op.setAttribute('value', el.name);
         subjectA.appendChild(op);
-    })
+    });
 
     let filterA = document.createElement('input');
     filterA.setAttribute('name', 'filterA');
     filterA.setAttribute('type', 'text');
+    filterA.setAttribute('placeholder', 'Attribute filter');
+
+    let distance = document.createElement('input');
+    distance.setAttribute('type', 'number');
+    distance.setAttribute('name', 'distance');
+    distance.setAttribute('id', 'distance-text-temporal');
+    distance.setAttribute('value', 5);
 
     let operation = document.createElement('select');
     operation.setAttribute('name', 'operation');
-    CQL_SPATIAL_OPERATIONS.forEach(el => {
+    CQL_TEMPORAL_OPERATIONS.name.forEach(el => {
         let op = document.createElement('option');
         op.appendChild(document.createTextNode(el));
         op.setAttribute('value', el);
@@ -292,49 +310,97 @@ function RenderTemporalQueryControl(props){
 
     operation.addEventListener('change', event => {
         let target = event.target;
-        operation = target.options[target.selectedIndex].value;
-        console.log(operation);
-        if (['DWITHIN', 'BEYOND'].includes(operation)){
-            let distance = document.createElement('input');
-            distance.setAttribute('type', 'text');
-            distance.setAttribute('name', 'distance');
-            distance.setAttribute('id', 'distance-text');
+        domain = CQL_TEMPORAL_OPERATIONS.domain[target.selectedIndex];
 
-            let label = document.createElement('label');
-            label.setAttribute('id', 'distance-label');
-            label.appendChild(document.createTextNode('Distance: '));
+        let time = document.getElementById('time-datetime-picker');
+        let timePeriodA = document.getElementById('timePeriodA-datetime-picker');
+        let timePeriodB = document.getElementById('timePeriodB-datetime-picker');
 
-            target.parentNode.appendChild(label);
-            target.parentNode.appendChild(distance);
+        if (time !== null)
+            time.parentNode.removeChild(time);
+
+        if (timePeriodA !== null){
+            timePeriodA.parentNode.removeChild(timePeriodA);
+            timePeriodB.parentNode.removeChild(timePeriodB);
         }
-        else {
-            let text = document.getElementById('distance-text');
-            let label = document.getElementById('distance-label');
 
-            if (text !== null)
-                text.parentNode.removeChild(text);
+        if (domain === 'time'){
+            let dateDiv = document.createElement('input');
+            dateDiv.setAttribute('type', 'text');
+            dateDiv.setAttribute('placeholder', 'Select date & time');
+            dateDiv.setAttribute('id', 'time-datetime-picker');
+            let dateA = flatpickr(dateDiv,{
+                enableTime: true,
+                defaultDate: "2013-08-09",
+            });
+
+            target.parentNode.removeChild(submit);
+            target.parentNode.appendChild(dateDiv);
+            target.parentNode.appendChild(submit);
+        }
+
+        if (domain === 'timePeriod'){
+            let dateDivA = document.createElement('input');
+            dateDivA.setAttribute('type', 'text');
+            dateDivA.setAttribute('placeholder', 'Select start date & time');
+            dateDivA.setAttribute('id', 'timePeriodA-datetime-picker');
+            let dateA = flatpickr(dateDivA,{
+                enableTime: true,
+                defaultDate: "2013-08-09",
+            });
+
+            let dateDivB = document.createElement('input');
+            dateDivB.setAttribute('type', 'text');
+            dateDivB.setAttribute('placeholder', 'Select end date & time');
+            dateDivB.setAttribute('id', 'timePeriodB-datetime-picker');
+            let dateB = flatpickr(dateDivB,{
+                enableTime: true,
+                defaultDate: "2013-08-09",
+            });
+
             
-            if (text !== null)
-                label.parentNode.removeChild(label);
+            target.parentNode.removeChild(submit);
+            target.parentNode.appendChild(dateDivA);
+            target.parentNode.appendChild(dateDivB);
+            target.parentNode.appendChild(submit);
         }
     })
 
+    let speed = document.createElement('input');
+    speed.setAttribute('type', 'text');
+    speed.setAttribute('placeholder', 'Attribute filter')
+    speed.setAttribute('name', 'filterV');
+
     let submit = document.createElement('input');
     submit.setAttribute('type', 'submit');
+
     let clear = document.createElement('button');
     clear.appendChild(document.createTextNode('Clear'));
-
-    container.appendChild(subjectA);
-    container.appendChild(filterA);
-    container.appendChild(operation);
-    container.appendChild(subjectB);
-    container.appendChild(filterB);
-    container.appendChild(submit);
+    clear.addEventListener('click', function(e) { props.clearHandler(this, e)});
 
     container.setAttribute('action', 'javascript:');
     container.addEventListener('submit', function(e) { props.submitHandler(this, e) });
-    clear.addEventListener('click', function(e) { props.clearHandler(this, e)});
+
+    container.appendChild(document.createTextNode(
+        `Select all objects of [Layer] with [Filter] 
+        that is within [Distance] of vehicle path
+        within a certain [Period] of time`));
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode('Layer: '));
+    container.appendChild(subjectA);
+    container.appendChild(filterA);
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode('Distance(m): '));
+    container.appendChild(distance);
+    container.appendChild(document.createElement('br'));
+    container.appendChild(document.createTextNode('Vehicle: '));
+    container.appendChild(speed);
+    container.appendChild(operation);
+    container.appendChild(submit);
 
     queryContainer.appendChild(container);
     queryContainer.appendChild(clear);
+
+    let eventChange = new Event('change');
+    operation.dispatchEvent(eventChange); 
 }

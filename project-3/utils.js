@@ -2,6 +2,11 @@ const CQL_SPATIAL_OPERATIONS= [
     'EQUALS', 'DISJOINT', 'INTERSECTS', 'TOUCHES', 'CROSSES', 'WITHIN', 'CONTAINS', 'OVERLAPS', 'RELATE', 'DWITHIN', 'BEYOND'
 ]
 
+const CQL_TEMPORAL_OPERATIONS = {
+    'name': ['BEFORE', 'BEFORE OR DURING', 'DURING', 'DURING OR AFTER', 'AFTER'],
+    'domain': ['time', 'timePeriod', 'timePeriod', 'timePeriod', 'time'] 
+}
+
 function createURLParams(params){
     res_string = ''
     for (const key of Object.keys(params)){
