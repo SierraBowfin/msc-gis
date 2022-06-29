@@ -384,7 +384,7 @@ class App{
 
         let filterV = caller.getElementsByTagName('input')['filterV'].value;
         let filterA = caller.getElementsByTagName('input')['filterA'].value;
-        let distance = document.getElementById('distance-text').value;
+        let distance = document.getElementById('distance-text-temporal').value;
 
         if (filterV == '')
             filterV = 'INCLUDE';
@@ -459,8 +459,6 @@ class App{
             outputFormat: 'application/json',
             cql_filter: cql_filter
         }
-
-        console.log(params);
     
         const request = this.url + '/wfs?' + createURLParams(params)
     
