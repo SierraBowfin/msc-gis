@@ -1,1 +1,9 @@
-#map { height: 600px; width:600px }
+#map { height: 600px; width:800px }
+
+#wrapper { width: auto;}
+
+.floatChild {
+    float: left;
+    width:50%;
+    padding:10px
+}
